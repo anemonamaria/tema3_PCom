@@ -45,12 +45,7 @@ char* compute_get_request(char* host, char* url, char* query_params,
 
     // Step 3 (optional): add headers and/or cookies, according to the protocol format
     if (cookies != NULL) {
-        memset(line, 0, strlen(line));
-        strcat(line, "Cookie: ");
-		strcat(line, "");
-        strcat(line, cookies[0]);
-        strcat(line, " ");
-
+		sprintf(line, "Cookie: %s", cookies[0]);
         compute_message(message, line);
     }
 
@@ -105,11 +100,7 @@ char* compute_post_request(char* host, char* url, char* content_type, char** bod
 
     // Step 4 (optional): add cookies
     if (cookies != NULL) {
-        // for (int i = 0;i < cookies_count;i++) {
-        //     memset(line, 0, strlen(line));
-        //     sprintf(line, "Cookie: %s", cookies[i]);
-            compute_message(message, line);
-       // }
+        compute_message(message, line);
     }
 
     // Step 5: add new line at end of header
@@ -118,7 +109,6 @@ char* compute_post_request(char* host, char* url, char* content_type, char** bod
     // Step 6: add the actual payload data
 	if (body_data != NULL) {
 	    compute_message(message, body_data_buffer);
-
 	}
 
     free(line);
