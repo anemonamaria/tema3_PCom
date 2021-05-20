@@ -10,21 +10,31 @@
 #include "requests.h"
 
 char* compute_get_request(char* host, char* url, char* query_params,
-    char** cookies, int cookies_count, char *token)
+    char** cookies, int cookies_count, char *token, char *command)
 {
     char* message = calloc(BUFLEN, sizeof(char));
     char* line = calloc(LINELEN, sizeof(char));
 
     // Step 1: write the method name, URL, request params (if any) and protocol type
 	memset(line, 0, LINELEN);
-    if (query_params != NULL) {
-        sprintf(line, "GET %s?%s HTTP/1.1", url, query_params);
-	    compute_message(message, line);
-    }
-    else {
-        sprintf(line, "GET %s HTTP/1.1", url);
-    	compute_message(message, line);
-    }
+	if(strcmp(command, "get") == 0) {
+		if (query_params != NULL) {
+			sprintf(line, "GET %s?%s HTTP/1.1", url, query_params);
+			compute_message(message, line);
+		}
+		else {
+			sprintf(line, "GET %s HTTP/1.1", url);
+			compute_message(message, line);
+		}
+	} else {
+		if (query_params != NULL) {
+			sprintf(line, "DELETE %s?%s HTTP/1.1", url, query_params);
+			compute_message(message, line);
+		} else {
+			sprintf(line, "DELETE %s HTTP/1.1", url);
+			compute_message(message, line);
+		}
+	}
 
 
     // Step 2: add the host
@@ -37,11 +47,10 @@ char* compute_get_request(char* host, char* url, char* query_params,
     if (cookies != NULL) {
         memset(line, 0, strlen(line));
         strcat(line, "Cookie: ");
-        for (int i = 0; i < cookies_count - 1; i++) {
-            strcat(line, cookies[i]);
-            strcat(line, ";");
-        }
-        strcat(line, cookies[cookies_count - 1]);
+		strcat(line, "");
+        strcat(line, cookies[0]);
+        strcat(line, " ");
+
         compute_message(message, line);
     }
 
