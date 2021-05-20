@@ -36,7 +36,7 @@ char *rcv_get_request(int socket, char host[16], char *command, char *token, cha
 }
 
 // functie auxiliara pentru colectarea datelor utilizatorului
-char *user() {
+char *user_func() {
 	char *username = calloc(100, sizeof(char));
 	char *password = calloc(100, sizeof(char));
 
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 			socket = open_connection(host, port, AF_INET, SOCK_STREAM, 0);
 
 			if (strncmp(comanda, "register", 8) == 0) {
-				user[0] = user();
+				user[0] = user_func();
 				// verificam daca utilizatorul a mai fost inregistrat
 				if(strstr(rcv_post_request(socket, host, REGISTER, user, NULL), "is taken") != NULL) {
 					printf("TAKEN USERNAME! Please try another one.\n");
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
 			else if (strncmp(comanda, "login", 5) == 0) {
 				connected = 1;
-				user[0] = user();
+				user[0] = user_func();
 				char *cookie_ptr = strstr(rcv_post_request(socket, host, LOGIN, user, NULL), "Set-Cookie: ");
 
 				// retinem cookie-ul in functie de care ne dam seama daca un utilizator
