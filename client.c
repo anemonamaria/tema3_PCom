@@ -20,15 +20,15 @@
 #define LOGOUT "/api/v1/tema/auth/logout"
 
 // functie ajutatoare pentru primirea raspunsului de la server pentru 'POST REQUEST'
-char *rcv_post_request(int socket, char host[16], char *command, char *login[1], char *token) {
-	char *message = compute_post_request(host, command, "application/json", login, 1, NULL, 0, token);
+char *rcv_post_request(int socket, char host[16], char *command, char *user[1], char *token) {
+	char *message = compute_post_request(host, command, "application/json", user, 1, NULL, 0, token);
 	send_to_server(socket, message);
 
 	return receive_from_server(socket);
 }
 
 // functie ajutatoare pentru primirea raspunsului de la server pentru 'GET REQUEST'
-char *rcv_get_request(int socket, char host[16], char *command, char *token, char *cookies[1], char *get_delete) {
+char *rcv_get_delete_request(int socket, char host[16], char *command, char *token, char *cookies[1], char *get_delete) {
 	char *message = compute_get_request(host, command, NULL, cookies, 1, token, get_delete);
 	send_to_server(socket, message);
 
@@ -49,7 +49,7 @@ char *user_func() {
 	JSON_Object *object = json_value_get_object(value);
 	json_object_set_string(object, "username", username);
 	json_object_set_string(object, "password", password);
-	return json_serialize_to_string_pretty(value);
+	return json_serialize_to_string(value);
 }
 
 int main(int argc, char *argv[]) {
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 				if(connected) {
 					library = 1;
 					// retinem token-ul care ne va ajuta sa verificam accesul catre librarie
-					char *tok = strstr(rcv_get_request(socket, host, ACCESS, token, cookies, "get"), "token");
+					char *tok = strstr(rcv_get_delete_request(socket, host, ACCESS, token, cookies, "get"), "token");
 					if (tok == NULL) {
 						printf("NO ACCESS!\n");
 						library = 0;
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 			else if (strncmp(comanda, "get_books", 9) == 0) {
 				if (library == 1) {
 					// accesul se realizeaza doar daca suntem intrati in librarie
-					printf("%s\n", strstr(rcv_get_request(socket, host, BOOKS, token, cookies, "get"), "["));
+					printf("%s\n", strstr(rcv_get_delete_request(socket, host, BOOKS, token, cookies, "get"), "["));
 				} else {
 					printf("Please enter the library!\n");
 				}
@@ -152,12 +152,11 @@ int main(int argc, char *argv[]) {
 					sprintf(route, "%s/%d", BOOKS, book_id);
 
 					// cautam cartile retinute
-					if (strstr(rcv_get_request(socket, host, route, token, cookies, "get"), "No book was found!") != NULL) {
+					if (strstr(rcv_get_delete_request(socket, host, route, token, cookies, "get"), "No book was found!") != NULL) {
 						printf("NO BOOK! Entered id is not valid!\n");
 					} else {
-						printf("%s\n", strstr(rcv_get_request(socket, host, route, token, cookies, "get"), "["));
+						printf("%s\n", strstr(rcv_get_delete_request(socket, host, route, token, cookies, "get"), "["));
 					}
-
 				} else {
 					printf("Please enter the library!\n");
 				}
@@ -215,7 +214,7 @@ int main(int argc, char *argv[]) {
 					json_object_set_string(object, "genre", genre);
 					json_object_set_string(object, "page_count", pages_string);
 					json_object_set_string(object, "publisher", publisher);
-					addbook[0] = json_serialize_to_string_pretty(value);
+					addbook[0] = json_serialize_to_string(value);
 
 					rcv_post_request(socket, host, BOOKS, addbook, token);
 					printf("Success!\n");
@@ -240,9 +239,10 @@ int main(int argc, char *argv[]) {
 					sprintf(route, "%s/%d", BOOKS, book_id);
 
 					// verificam daca id-ul corespunde unei carti
-					char *delete = strstr(rcv_get_request(socket, host, route, token, cookies, "delete"), "No book was deleted!");
+					char *delete = strstr(rcv_get_delete_request(socket, host, route, token, cookies, "delete"), "No book was deleted!");
 					if (delete != NULL) {
 						printf("NO BOOK! Entered id is not valid!\n");
+						continue;
 					}
 					printf("Success!\n");
 				} else {
@@ -253,7 +253,7 @@ int main(int argc, char *argv[]) {
 			else if (strncmp(comanda, "logout", 6) == 0) {
 				if (connected == 1) {
 					// comanda se realizeaza doar daca suntem logati deja
-					rcv_get_request(socket, host, LOGOUT, token, cookies, "get");
+					rcv_get_delete_request(socket, host, LOGOUT, token, cookies, "get");
 					connected = 0;
 					library = 0;
 					printf("Success!\n");

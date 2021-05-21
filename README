@@ -1,0 +1,64 @@
+Moraru Anemona-Maria
+323CC
+Tema 3 - Client Web. Comunicaţie cu REST API.
+Protocoale de comunicatie
+Mai 2021
+
+Structura codului acestui proiect este cea din laboratorul 10. Fisierele pe
+care le-am modificat in vederea respectarii cerintei sunt 'client.c' si
+'request.c' / 'request.h'.
+
+Pentru parsarea obiectelor json am folosit fisierele publice de pe internet 'parson.'
+si 'parson.h' deoarece am ales sa scriu rezolvarea temei in limbajul C. Am
+parsat informatiile despre user si despre carte in format json cu ajutorul
+acestei librarii.
+
+'client.c'
+
+In acest fisier mi-am definit unele functii auziliare care mi-au facilitat
+scrierea codului. Functia 'rcv_post_request()' foloseste functia din
+laboratorul 10 'compute_post_request()', trimite mesajul catre server si apoi
+primeste raspunsul tot de la acesta. Functia 'rcv_get_delete_request()' este
+asemanatoare cu precedenta doar ca mai primeste un argument ce diferentiaza
+tipul de cerere: daca este de tipul 'GET' sau 'DELETE'. Urmatoarea functie
+auxiliara este cea de 'user()' ce retine credentialele utilizatorului si le
+parseaza in format Json.
+
+In main am un while continuu care se opreste la intalnirea comenzii 'exit'.
+Pentru orice alta comanda, deschid initial o conexiune cu serverul pe care o
+inchid in final. Daca se primeste de la stdin comanda:
+-> 'register' - apelam functia user() pentru a retine datele utilizatorului
+			  - verificam daca in mesajul primit de la server avem eroare
+			  referitoare la faptul ca utilizatorul respectiv este deja creat
+-> 'login' - initializam variabila 'connected' ce ne va ajuta pe parcurs
+		   - apelam functia user() pentru a retine datele utilizatorului
+		   - verificam daca s-a realizat conectarea
+		   - stergem din cookie caracterele in plus si anuntam logarea
+-> 'enter_library' - verificam intai daca suntem logati, in caz contrar returnam
+				   mesaj de eroare
+				   - initializam variabila care ne va ajuta sa verificam daca
+				   suntem intrati in librarie
+				   - verificam daca am primit token-ul in  mesajul primit de la
+				   server, in caz contrar afisam mesaj de eroare, in caz
+				   afirmativ stergem caracterele in plus din token si anuntam
+				   succesul
+-> 'get_books' - verificam daca suntem intrati in librarie, altfel printam
+			   mesaj de eroare
+			   - afisam cartile primite in mesajul de la server
+-> 'get_book' - verificam daca suntem intrati in librarie, altfel printam
+			  mesaj de eroare
+			  - scanam id-ul si verificam daca acesta are formatul corespunzator
+			  - formam ruta de acces (url-ul)
+			  - verificam daca in mesajul primit de la server se regaseste "No
+			  book was found", altfel printam cartea gasita la id-ul respectiv
+-> 'add_book' - verificam daca accesul in librarie este permis
+			  - retinem detaliile cartii si verificam daca acestea au formatul
+			  valid
+			  - realizam obiectul json pe care apoi il trimitem catre server
+-> 'delte_book' - verificam daca accesul in librarie este permis
+				- retinem id-ul si verificam daca e valid, apoi compunem ruta
+				- verificam daca in mesajul primit de la server se primeste "No
+				book was deleted", in caz afirmativ trimitem mesaj de eroare
+-> 'logout' - verificam daca user-ul este logat
+			- trimitem catre server request de logout
+			- atribuim variabilelor folosite 0
